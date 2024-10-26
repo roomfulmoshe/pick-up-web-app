@@ -256,3 +256,278 @@
         margin-bottom: 80px;
     }
 }
+
+
+
+
+
+
+
+/* Add to your existing GameCard.css */
+
+
+.game-card-container {
+    width: 90vw;
+    max-width: 400px;
+    height: 75vh;
+    max-height: 700px;
+    position: relative;
+    perspective: 1500px;
+    transform-style: preserve-3d;
+}
+
+.game-card {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    transform-style: preserve-3d;
+    transition: all 0.3s ease;
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
+    border-radius: 24px;
+}
+
+.game-card-front {
+    transform: rotateY(0deg);
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    -webkit-backface-visibility: hidden;
+    backface-visibility: hidden;
+    transform-style: preserve-3d;
+    transition:
+        transform 0.3s ease-out,
+        opacity 0.2s ease-out;
+}
+
+.game-card-back {
+    transform: rotateY(180deg);
+    background: #ffffff;
+    padding: 24px;
+    display: flex;
+    flex-direction: column;
+    overflow-y: auto;
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    -webkit-backface-visibility: hidden;
+    backface-visibility: hidden;
+    transform-style: preserve-3d;
+    transition:
+        transform 0.3s ease-out,
+        opacity 0.2s ease-out;
+}
+
+.game-card-container.is-flipped .game-card-front {
+    transform: rotateY(180deg);
+    opacity: 0;
+}
+
+.game-card-container.is-flipped .game-card-back {
+    transform: rotateY(360deg);
+    opacity: 1;
+}
+
+/* Add transform origin for better rotation effect */
+.game-card-front,
+.game-card-back {
+    transform-origin: center center;
+}
+
+/* Add perspective to container to enhance 3D effect */
+.game-card-container {
+    perspective: 2000px;
+}
+
+/* Ensure smooth opacity transitions */
+.game-card-front {
+    opacity: 1;
+}
+
+.game-card-back {
+    opacity: 0;
+}
+
+.game-card-container.is-flipped .game-card-front {
+    opacity: 0;
+}
+
+.game-card-container.is-flipped .game-card-back {
+    opacity: 1;
+}
+
+/* Rest of your CSS remains the same */
+
+
+
+
+
+/* Description, Equipment, Fee,  */
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/* Back of card styling */
+.game-card-back {
+    transform: rotateY(180deg);
+    background: #ffffff;
+    padding: 32px 24px;
+    display: flex;
+    flex-direction: column;
+    overflow-y: auto;
+}
+
+/* Back button styling */
+.back-button {
+    width: 100%;
+    padding: 12px;
+    margin-bottom: 24px;
+    background: #f8f9fa;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    color: #1a1a1a;
+    font-size: 1rem;
+    font-weight: 500;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    transition: background-color 0.2s ease;
+}
+
+.back-button:hover {
+    background-color: #e2e8f0;
+}
+
+.back-button svg {
+    width: 20px;
+    height: 20px;
+}
+
+/* Game details section styling */
+.game-details {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+}
+
+.game-details h2 {
+    font-size: 24px;
+    font-weight: 600;
+    color: #1a1a1a;
+    margin-bottom: 8px;
+}
+
+.details-section {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.details-section h3 {
+    font-size: 16px;
+    font-weight: 600;
+    color: #1a1a1a;
+    margin-bottom: 4px;
+}
+
+.details-section p {
+    font-size: 15px;
+    line-height: 1.5;
+    color: #4a5568;
+    margin: 0;
+}
+
+.details-section ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.details-section li {
+    font-size: 15px;
+    color: #4a5568;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.details-section li:before {
+    content: "•";
+    color: #2563eb;
+}
+
+/* Reserve button styling */
+.reserve-button {
+    width: 100%;
+    padding: 14px;
+    background-color: #2563eb;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-weight: 600;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+    margin-top: auto;
+}
+
+.reserve-button:hover {
+    background-color: #1d4ed8;
+}
+
+/* Mobile optimization */
+@media (max-width: 480px) {
+    .game-card-back {
+        padding: 24px 16px;
+    }
+
+    .game-details h2 {
+        font-size: 20px;
+    }
+
+    .details-section h3 {
+        font-size: 15px;
+    }
+
+    .details-section p,
+    .details-section li {
+        font-size: 14px;
+    }
+
+    .back-button,
+    .reserve-button {
+        padding: 12px;
+        font-size: 0.95rem;
+    }
+}
