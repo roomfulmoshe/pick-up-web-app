@@ -1,38 +1,22 @@
-// import { Routes, Route, Navigate } from 'react-router-dom';
-// import SignUp from './components/auth/SignUp';
-// import LoginPage from './components/auth/LoginPage';
-
 import { Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider } from './context/AuthContext';
+import { ProtectedRoute } from './components/auth/ProtectedRoute';
 import SignUp from './components/auth/SignUp';
 import ProfileForm from './components/auth/ProfileForm';
 import LoginPage from './components/auth/LoginPage';
 import HomePage from './components/HomePage';
 import HostGames from './pages/HostGames';
-import { useAuth } from './context/AuthContext';
-
-// Protected Route component
-const ProtectedRoute = ({ children }) => {
-  const { user, loading } = useAuth();
-  
-  if (loading) {
-    return <div>Loading...</div>;
-  }
-
-  if (!user) {
-    return <Navigate to="/login" />;
-  }
-
-  return children;
-};
 
 function App() {
   return (
     <AuthProvider>
       <Routes>
+        {/* Public Routes */}
         <Route path="/signup" element={<SignUp />} />
         <Route path="/login" element={<LoginPage />} />
-         <Route 
+        
+        {/* Protected Routes */}
+        <Route 
           path="/host" 
           element={
             <ProtectedRoute>
@@ -40,7 +24,7 @@ function App() {
             </ProtectedRoute>
           } 
         />
-         <Route 
+        <Route 
           path="/profileForm" 
           element={
             <ProtectedRoute>
