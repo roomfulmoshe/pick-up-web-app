@@ -1,3 +1,15 @@
+/* Add this at the top of your GameCard.css file */
+.game-swiper {
+    position: relative;
+    width: 90vw;
+    max-width: 400px;
+    height: 75vh;
+    max-height: 700px;
+    margin: 0 auto;
+}
+
+
+
 .game-card {
     position: relative;
     width: 90vw;
@@ -266,14 +278,21 @@
 /* Add to your existing GameCard.css */
 
 
+/* Update your existing .game-card-container class */
 .game-card-container {
-    width: 90vw;
-    max-width: 400px;
-    height: 75vh;
-    max-height: 700px;
-    position: relative;
+    position: absolute;
+    /* Changed from relative to absolute */
+    width: 100%;
+    height: 100%;
     perspective: 1500px;
     transform-style: preserve-3d;
+    transition: all 0.3s ease;
+}
+
+/* Add the exit animation */
+.game-card-container.exiting {
+    transform: translateX(-100%);
+    opacity: 0;
 }
 
 .game-card {

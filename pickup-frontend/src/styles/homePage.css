@@ -1,0 +1,97 @@
+/* src/styles/homepage.css */
+
+.page-container {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+.main-content {
+    flex: 1;
+    padding: 2rem 1rem;
+    background-color: #f5f5f5;
+}
+
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 15px;
+}
+
+.welcome-heading {
+    font-size: 2rem;
+    font-weight: bold;
+    color: #333;
+    text-align: center;
+    margin-bottom: 2rem;
+}
+
+.games-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 2rem;
+    justify-items: center;
+    margin: 0 auto;
+    max-width: 100%;
+    padding: 0 1rem;
+}
+
+.game-card-wrapper {
+    width: 100%;
+    max-width: 350px;
+    height: 100%;
+    display: flex;
+    justify-content: center;
+}
+
+/* Responsive styles */
+@media (max-width: 768px) {
+    .main-content {
+        padding: 1.5rem 0.75rem;
+    }
+
+    .games-grid {
+        grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+        gap: 1.5rem;
+        padding: 0 0.5rem;
+    }
+
+    .welcome-heading {
+        font-size: 1.75rem;
+        margin-bottom: 1.5rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .main-content {
+        padding: 1rem 0.5rem;
+    }
+
+    .games-grid {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+    }
+
+    .welcome-heading {
+        font-size: 1.5rem;
+        margin-bottom: 1rem;
+    }
+
+    .game-card-wrapper {
+        max-width: 100%;
+    }
+}
+
+/* Smooth transitions for responsive changes */
+.games-grid {
+    transition: all 0.3s ease-in-out;
+}
+
+/* Optional: Add a nice hover effect to cards */
+.game-card-wrapper {
+    transition: transform 0.2s ease-in-out;
+}
+
+.game-card-wrapper:hover {
+    transform: translateY(-3px);
+}

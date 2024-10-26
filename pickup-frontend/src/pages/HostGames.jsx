@@ -16,6 +16,10 @@ import Navbar from '../components/layout/Navbar';
 import Footer from '../components/layout/Footer';
 
 
+
+
+
+
 const SPORTS = [
   { id: 'basketball', name: 'Basketball', icon: '🏀', defaultMax: 10, defaultMin: 6 },
   { id: 'soccer', name: 'Soccer', icon: '⚽', defaultMax: 14, defaultMin: 8 },
@@ -43,8 +47,6 @@ const HostGameForm = () => {
     console.log('User display name:', user.displayName);
     console.log('User ID:', user.uid);
   }, [user, navigate]);
-
-
 
 
 

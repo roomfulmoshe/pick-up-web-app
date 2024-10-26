@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import '../../styles/GameCard.css';
 
-const GameCard = ({ game }) => {
+const GameCard = ({ game, onDislike, onReserve }) => {
   const [isFlipped, setIsFlipped] = useState(false);
   const [isLiked, setIsLiked] = useState(false);
   const [isDisliked, setIsDisliked] = useState(false);
@@ -17,11 +17,20 @@ const GameCard = ({ game }) => {
     e.stopPropagation();
     setIsDisliked(!isDisliked);
     setIsLiked(false);
+    // Call the parent's onDislike to trigger next card
+    onDislike(e);
   };
 
   const handleFlipBack = (e) => {
     e.stopPropagation();
     setIsFlipped(false);
+  };
+
+  const handleReserveClick = (e) => {
+    e.stopPropagation();
+    // Call the parent's onReserve to trigger next card
+    onReserve(e);
+    handleFlipBack(e);
   };
 
   return (
@@ -143,7 +152,10 @@ const GameCard = ({ game }) => {
             </ul>
           </div>
 
-          <button className="reserve-button">
+           <button 
+            className="reserve-button"
+            onClick={handleReserveClick}  // Updated to use new handler
+          >
             Reserve Your Spot
           </button>
         </div>
