@@ -8,7 +8,7 @@
     overflow: hidden;
     background-color: #ffffff;
     box-shadow: 0 8px 40px rgba(0, 0, 0, 0.1);
-    background-image: url('https://i.giphy.com/media/v1.Y2lkPTc5MGI3NjExaWVhMmU2OGNpa2FvZmVtcXhid2Fwb3RyaXF6YTVkd3Z3MHFtZHp4aCZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/l2SqcPdEf9DYMGGRi/giphy.gif');
+    background-image: url('https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExeXA2OWx6bHUxOHZpZTExOWMzdXR3Mzdpc2I5ZjQycGpmenJkajhkMyZlcD12MV9naWZzX3NlYXJjaCZjdD1n/cYkXV19fDcmA0/giphy.gif');
     background-size: cover;
     background-position: center;
 }
@@ -172,5 +172,87 @@
 
     .game-card:hover {
         transform: translateY(-4px);
+    }
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+.game-card__action-buttons {
+    position: absolute;
+    bottom: 24px;
+    /* Slightly lower position */
+    left: 0;
+    right: 0;
+    display: flex;
+    justify-content: space-between;
+    padding: 0 24px;
+    /* Increased side padding */
+    pointer-events: none;
+    z-index: 20;
+}
+
+.game-card__action-button {
+    width: 68px;
+    /* Increased from 56px */
+    height: 68px;
+    /* Increased from 56px */
+    border-radius: 50%;
+    border: none;
+    background: rgba(255, 255, 255, 0.95);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    pointer-events: auto;
+}
+
+.game-card__action-button svg {
+    width: 32px;
+    /* Increased from 24px */
+    height: 32px;
+    /* Increased from 24px */
+    color: #64748b;
+    transition: all 0.2s ease;
+}
+
+/* Adjust the details container margin to accommodate larger buttons */
+.game-card__details {
+    margin-bottom: 90px;
+    /* Increased from 80px */
+}
+
+@media (max-width: 480px) {
+    .game-card__action-button {
+        width: 56px;
+        /* Adjusted mobile size */
+        height: 56px;
+    }
+
+    .game-card__action-button svg {
+        width: 26px;
+        /* Adjusted mobile icon size */
+        height: 26px;
+    }
+
+    .game-card__action-buttons {
+        bottom: 20px;
+        padding: 0 20px;
+    }
+
+    .game-card__details {
+        margin-bottom: 80px;
     }
 }
