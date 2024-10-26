@@ -36,8 +36,8 @@ function Navbar() {
       <ul className={`nav-links ${isOpen ? "open" : ""}`}>
         <li><Link to="/">FIND</Link></li>
         <li><Link to="/host">HOST</Link></li>
-        <li><Link to="/services">My Games</Link></li>
-        <li><Link to="/contact">About</Link></li>
+        <li><Link to="/mygames">My Games</Link></li>
+        <li><Link to="/about">About</Link></li>
         <li>
           <button 
             onClick={handleSignOut} 

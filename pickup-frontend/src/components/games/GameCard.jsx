@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState }  from 'react';
 import '../../styles/GameCard.css'; // Import CSS for styling
 
 
@@ -16,7 +16,20 @@ import '../../styles/GameCard.css'; // Import CSS for styling
 // };
 
 const GameCard = ({ game }) => {
+  const [isLiked, setIsLiked] = useState(false);
+  const [isDisliked, setIsDisliked] = useState(false);
+
+  const handleLike = () => {
+    setIsLiked(!isLiked);
+    setIsDisliked(false);
+  };
+
+  const handleDislike = () => {
+    setIsDisliked(!isDisliked);
+    setIsLiked(false);
+  };
   return (
+    
     <div className="game-card">
       <div className="game-card__gradient-overlay" />
       

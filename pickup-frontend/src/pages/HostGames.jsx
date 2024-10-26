@@ -1,6 +1,16 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
+import { db } from '../services/firebase';
+import { 
+  collection, 
+  addDoc, 
+  doc, 
+  setDoc, 
+  serverTimestamp, 
+  GeoPoint 
+} from 'firebase/firestore';
+import { getGeocode } from '../services/geocoding';
 import '../styles/host.css';
 import Navbar from '../components/layout/Navbar';
 import Footer from '../components/layout/Footer';
@@ -18,6 +28,8 @@ const SPORTS = [
 const HostGameForm = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
+  const [isLoading, setIsLoading] = useState(false);
+  const [successMessage, setSuccessMessage] = useState('');
 
   useEffect(() => {
     // If no user is logged in, redirect to login
@@ -61,6 +73,14 @@ const HostGameForm = () => {
   const [step, setStep] = useState(1);
   const [errors, setErrors] = useState({});
 
+
+  const handleStepClick = (newStep) => {
+  // Only allow going backwards or to the next step
+  if (newStep < step || newStep === step + 1) {
+    setStep(newStep);
+  }
+};
+
   const handleSportChange = (sportId) => {
     const sport = SPORTS.find(s => s.id === sportId);
     setFormData(prev => ({
@@ -87,19 +107,89 @@ const HostGameForm = () => {
     return Object.keys(newErrors).length === 0;
   };
 
-  const handleSubmit = (e) => {
+const handleSubmit = async (e) => {
     e.preventDefault();
+    if (step !== 3) {
+        return;
+    }
     if (validateForm()) {
-      // Add timestamps and current player count
-      const finalData = {
-        ...formData,
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
-        currentPlayers: 1, // Host is first player
-        status: 'active'
-      };
-      console.log('Submitting game:', finalData);
-      // Handle your form submission here
+      try {
+        setIsLoading(true);
+        setSuccessMessage('');
+        setErrors({});
+
+        // Get coordinates for the address
+        const { latitude, longitude } = await getGeocode(formData.location.address);
+
+        // Prepare the game data
+        const gameData = {
+          hostId: user.uid,
+          photoURL: user.photoURL || null,
+          sport: formData.sport,
+          title: formData.title,
+          description: formData.description,
+          skillLevel: formData.skillLevel,
+          status: 'active',
+          maxPlayers: parseInt(formData.maxPlayers),
+          minPlayers: parseInt(formData.minPlayers),
+          currentPlayers: 1,
+          location: {
+            address: formData.location.address,
+            latitude: latitude,
+            longitude: longitude,
+            venue: formData.location.venue,
+            locationType: formData.location.locationType,
+            coordinates: new GeoPoint(latitude, longitude)
+          },
+          schedule: {
+            startTime: new Date(formData.schedule.startTime),
+            endTime: new Date(formData.schedule.endTime),
+            isRecurring: false
+          },
+          equipment: formData.equipment,
+          fee: parseFloat(formData.fee),
+          autoJoin: formData.autoJoin,
+          createdAt: serverTimestamp(),
+          updatedAt: serverTimestamp()
+        };
+
+        // Add the game document
+        const gameRef = await addDoc(collection(db, 'games'), gameData);
+        const gameId = gameRef.id;
+
+        // Create game_players record
+        await setDoc(doc(db, 'games', gameId, 'game_players', user.uid), {
+          gameId: gameId,
+          userId: user.uid,
+          status: 'confirmed',
+          joinedAt: serverTimestamp()
+        });
+
+        // Create user_games record
+        await setDoc(doc(db, 'user_games', `${user.uid}_${gameId}`), {
+          userId: user.uid,
+          gameId: gameId,
+          role: 'host',
+          status: 'confirmed',
+          startTime: new Date(formData.schedule.startTime)
+        });
+
+        setSuccessMessage('Game created successfully!');
+        
+        // Redirect after a short delay to show the success message
+        setTimeout(() => {
+          navigate('/');
+        }, 1500);
+
+      } catch (error) {
+        console.error('Error creating game:', error);
+        setErrors(prev => ({
+          ...prev,
+          submit: 'Failed to create game. Please try again.'
+        }));
+      } finally {
+        setIsLoading(false);
+      }
     }
   };
 
@@ -108,22 +198,23 @@ const HostGameForm = () => {
     <>
     <Navbar/>
     <div className="host-game-container">
-      <form onSubmit={handleSubmit} className="host-game-form">
+      <form className="host-game-form">
         {/* Smart Progress Indicator */}
         <div className="form-progress">
-          {[1, 2, 3].map((num) => (
-            <div 
-              key={num}
-              className={`progress-step ${step >= num ? 'active' : ''}`}
-              onClick={() => setStep(num)}
-            >
-              <div className="step-number">{num}</div>
-              <div className="step-label">
-                {num === 1 ? 'Game Info' : num === 2 ? 'Schedule & Location' : 'Details'}
-              </div>
-            </div>
-          ))}
-        </div>
+  {[1, 2, 3].map((num) => (
+    <div 
+      key={num}
+      className={`progress-step ${step >= num ? 'active' : ''}`}
+      onClick={() => handleStepClick(num)}
+      style={{ cursor: num <= step ? 'pointer' : 'not-allowed' }}
+    >
+      <div className="step-number">{num}</div>
+      <div className="step-label">
+        {num === 1 ? 'Game Info' : num === 2 ? 'Schedule & Location' : 'Details'}
+      </div>
+    </div>
+  ))}
+</div>
 
         {step === 1 && (
           <div className="form-section">
@@ -332,30 +423,37 @@ const HostGameForm = () => {
         )}
 
         <div className="form-actions">
-          {step > 1 && (
-            <button 
-              type="button" 
-              className="secondary-button"
-              onClick={() => setStep(prev => prev - 1)}
-            >
-              Back
-            </button>
-          )}
-          
-          {step < 3 ? (
-            <button 
-              type="button" 
-              className="primary-button"
-              onClick={() => setStep(prev => prev + 1)}
-            >
-              Next
-            </button>
-          ) : (
-            <button type="submit" className="primary-button">
-              Create Game
-            </button>
-          )}
-        </div>
+  {step > 1 && (
+    <button 
+      type="button"  // This is correct
+      className="secondary-button"
+      onClick={() => setStep(prev => prev - 1)}
+      disabled={isLoading}
+    >
+      Back
+    </button>
+  )}
+  
+  {step < 3 ? (
+    <button 
+      type="button"  // This is correct
+      className="primary-button"
+      onClick={() => setStep(prev => prev + 1)}
+      disabled={isLoading}
+    >
+      Next
+    </button>
+  ) : (
+    <button 
+  type="button"  // Change from "submit" to "button"
+  className="primary-button"
+  onClick={handleSubmit}  // Handle submission through click event
+  disabled={isLoading}
+>
+  {isLoading ? 'Creating Game...' : 'Create Game'}
+</button>
+  )}
+</div>
       </form>
     </div>
      <Footer/>
