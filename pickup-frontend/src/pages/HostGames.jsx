@@ -52,6 +52,7 @@ const HostGameForm = () => {
   const [formData, setFormData] = useState({
     sport: '',
     title: '',
+    photoURL: '',
     description: '',
     schedule: {
       startTime: '',
@@ -124,7 +125,7 @@ const handleSubmit = async (e) => {
         // Prepare the game data
         const gameData = {
           hostId: user.uid,
-          photoURL: user.photoURL || null,
+          photoURL: formData.photoURL || user.photoURL || null,
           sport: formData.sport,
           title: formData.title,
           description: formData.description,
@@ -395,6 +396,16 @@ const handleSubmit = async (e) => {
                 placeholder="What should players bring?"
                 value={formData.equipment}
                 onChange={e => setFormData({...formData, equipment: e.target.value})}
+              />
+            </div>
+
+            <div className="input-group">
+              <label>Photo/GIF URL</label>
+              <input
+                type="text"
+                placeholder="https://www.someurl.com"
+                value={formData.photoURL}
+                onChange={e => setFormData({...formData, photoURL: e.target.value})}
               />
             </div>
 
