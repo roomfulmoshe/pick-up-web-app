@@ -1,226 +1,186 @@
 /* Filters.css */
 .filters-container {
-    background: white;
-    border-radius: 16px;
-    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+    background: #ffffff;
+    border-radius: 12px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
     padding: 24px;
     width: 100%;
+    max-width: 800px;
+    margin: 20px auto;
 }
 
-.filter-group {
+.filter-header {
     display: flex;
-    flex-direction: column;
-    gap: 24px;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 24px;
 }
 
 .filter-title {
-    font-size: 18px;
+    font-size: 1.5rem;
     font-weight: 600;
-    color: #1a1a1a;
-    margin: 0 0 8px 0;
+    color: #2d3748;
+    margin: 0;
 }
 
-.filter-item {
-    display: flex;
-    flex-direction: column;
+.clear-filters {
+    background: none;
+    border: none;
+    color: #e53e3e;
+    font-size: 0.875rem;
+    font-weight: 500;
+    cursor: pointer;
+    padding: 6px 12px;
+    border-radius: 6px;
+    transition: all 0.2s ease;
+}
+
+.clear-filters:hover {
+    background: #fff5f5;
+}
+
+/* Sports Grid Styles */
+.sports-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
     gap: 12px;
+    margin-bottom: 32px;
 }
 
-/* Toggle Switch Styles */
-.toggle-container {
+.sport-button {
     display: flex;
-    justify-content: space-between;
     align-items: center;
-    cursor: pointer;
-}
-
-.toggle-label {
-    font-size: 14px;
-    color: #4a5568;
-}
-
-.toggle-input {
-    display: none;
-}
-
-.toggle-switch {
-    position: relative;
-    width: 44px;
-    height: 24px;
-    background: #e2e8f0;
+    justify-content: center;
+    padding: 12px;
+    background: #ffffff;
+    border: 2px solid #e2e8f0;
     border-radius: 12px;
-    padding: 2px;
-    transition: background 0.3s;
     cursor: pointer;
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
 }
 
-.toggle-switch::before {
+.sport-button:hover {
+    transform: translateY(-2px);
+    border-color: #90cdf4;
+    box-shadow: 0 4px 12px rgba(66, 153, 225, 0.1);
+}
+
+.sport-button.selected {
+    border-color: #4299e1;
+    background: #ebf8ff;
+    color: #2b6cb0;
+}
+
+.sport-button.selected::before {
     content: '';
     position: absolute;
+    top: 0;
+    right: 0;
     width: 20px;
     height: 20px;
-    border-radius: 50%;
-    background: white;
-    left: 2px;
-    transition: transform 0.3s;
+    background: #4299e1;
+    clip-path: polygon(100% 0, 0 0, 100% 100%);
 }
 
-.toggle-input:checked+.toggle-switch {
-    background: #2563eb;
-}
-
-.toggle-input:checked+.toggle-switch::before {
-    transform: translateX(20px);
-}
-
-/* Select Styles */
-.select-label {
-    font-size: 14px;
-    color: #4a5568;
-    margin-bottom: -4px;
-}
-
-.custom-select {
-    position: relative;
-}
-
-.select-input {
-    width: 100%;
-    padding: 10px 16px;
-    font-size: 14px;
-    border: 1px solid #e2e8f0;
-    border-radius: 8px;
-    background: white;
-    color: #1a1a1a;
-    appearance: none;
-    cursor: pointer;
-}
-
-.custom-select::after {
-    content: '▼';
-    font-size: 12px;
-    color: #4a5568;
+.sport-button.selected::after {
+    content: '✓';
     position: absolute;
-    right: 16px;
-    top: 50%;
-    transform: translateY(-50%);
-    pointer-events: none;
+    top: 2px;
+    right: 2px;
+    font-size: 10px;
+    color: white;
 }
 
-.select-input:focus {
-    outline: none;
-    border-color: #2563eb;
-    box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.1);
+.sport-icon {
+    font-size: 24px;
+    margin-right: 8px;
 }
 
-/* Range Slider Styles */
-.range-label {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
+.sport-name {
     font-size: 14px;
-    color: #4a5568;
-}
-
-.range-value {
-    color: #2563eb;
     font-weight: 500;
 }
 
-.range-input {
+/* Distance Slider Styles */
+.distance-control {
+    margin-top: 32px;
+}
+
+.distance-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 12px;
+}
+
+.distance-label {
+    font-size: 1rem;
+    font-weight: 500;
+    color: #2d3748;
+}
+
+.distance-value {
+    font-size: 0.875rem;
+    color: #4a5568;
+    background: #edf2f7;
+    padding: 4px 12px;
+    border-radius: 16px;
+}
+
+.distance-slider {
     width: 100%;
     height: 4px;
     background: #e2e8f0;
     border-radius: 2px;
     appearance: none;
-}
-
-.range-input::-webkit-slider-thumb {
-    appearance: none;
-    width: 20px;
-    height: 20px;
-    background: #2563eb;
-    border-radius: 50%;
-    cursor: pointer;
-    border: 3px solid white;
-    box-shadow: 0 0 0 1px #2563eb;
-}
-
-.range-input::-moz-range-thumb {
-    width: 20px;
-    height: 20px;
-    background: #2563eb;
-    border-radius: 50%;
-    cursor: pointer;
-    border: 3px solid white;
-    box-shadow: 0 0 0 1px #2563eb;
-}
-
-.range-marks {
-    display: flex;
-    justify-content: space-between;
-    margin-top: 8px;
-    color: #94a3b8;
-    font-size: 12px;
-}
-
-/* Responsive Styles */
-@media (min-width: 769px) {
-    .filters-container {
-        width: 280px;
-        position: sticky;
-        top: 24px;
-        align-self: flex-start;
-    }
-}
-
-@media (max-width: 768px) {
-    .filters-container {
-        margin-bottom: 24px;
-    }
-
-    .filter-group {
-        gap: 20px;
-    }
-}
-
-@media (max-width: 480px) {
-    .filters-container {
-        padding: 16px;
-        border-radius: 12px;
-    }
-
-    .filter-group {
-        gap: 16px;
-    }
-
-    .filter-title {
-        font-size: 16px;
-    }
-}
-
-/* Hover States */
-.select-input:hover {
-    border-color: #94a3b8;
-}
-
-.toggle-container:hover .toggle-switch {
-    background: #94a3b8;
-}
-
-.toggle-container:hover .toggle-input:checked+.toggle-switch {
-    background: #1d4ed8;
-}
-
-/* Focus States */
-.range-input:focus {
     outline: none;
 }
 
-.range-input:focus::-webkit-slider-thumb {
-    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.2);
+.distance-slider::-webkit-slider-thumb {
+    appearance: none;
+    width: 20px;
+    height: 20px;
+    background: #4299e1;
+    border-radius: 50%;
+    cursor: pointer;
+    border: 3px solid #ffffff;
+    box-shadow: 0 2px 6px rgba(66, 153, 225, 0.3);
+    transition: all 0.2s ease;
 }
 
-.range-input:focus::-moz-range-thumb {
-    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.2);
+.distance-slider::-webkit-slider-thumb:hover {
+    transform: scale(1.1);
+}
+
+.distance-marks {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 8px;
+    padding: 0 10px;
+}
+
+.distance-mark {
+    color: #718096;
+    font-size: 0.75rem;
+}
+
+/* Animation for button selection */
+@keyframes selectPulse {
+    0% {
+        transform: scale(1);
+    }
+
+    50% {
+        transform: scale(0.98);
+    }
+
+    100% {
+        transform: scale(1);
+    }
+}
+
+.sport-button.selected {
+    animation: selectPulse 0.3s ease;
 }
