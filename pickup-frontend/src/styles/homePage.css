@@ -246,3 +246,44 @@ body {
         -ms-flex-order: 1;
     }
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/* Add to your homePage.css */
+.loading-state,
+.error-state,
+.empty-state {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 200px;
+    width: 100%;
+    text-align: center;
+    font-size: 1.1rem;
+    color: #666;
+}
+
+.error-state {
+    color: #dc3545;
+}

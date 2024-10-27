@@ -1,94 +1,27 @@
 import React, { useState } from 'react';
 import '../../styles/GameCard.css';
-
-
-const sportGifDefaults = {
-  basketball: "https://media.giphy.com/media/3oEdv2qNBprY4gDxMk/giphy.gif?cid=790b7611797lpcfpl8prs6kjmbwmgp09vbdgztuw8g6ykzzu&ep=v1_gifs_search&rid=giphy.gif&ct=g",
-  tennis: "https://media.giphy.com/v1.Y2lkPTc5MGI3NjExNnJpZXQyc3g1MnFqbmFvdGJzejRuaW9wdXJyaHFxaHZyaDVvdyZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/3oEduPQqbpT1LqVOz6/giphy.gif",
-  soccer: "https://media.giphy.com/v1.Y2lkPTc5MGI3NjExcWVpZjhiYmp2ODB3ZDZoM2hnenIxYzRhZWQyMTA3M2Fua2p5Nzg1bSZlcD12MV9naWZzX3NlYXJjaCZjdD1n/3o6ZtmDAQdrDfaTWEw/giphy.gif",
-  volleyball: "https://media.giphy.com/v1.Y2lkPTc5MGI3NjExN2RlNDdrcDFzMm5nMzZ1ZmE1anB4NWZkeTZwZDZvM3NqdXNxNWd2aCZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/l0MYCtMXYOFEXz9bG/giphy.gif",
-  default: "https://media.giphy.com/media/3oEdv2qNBprY4gDxMk/giphy.gif?cid=790b7611797lpcfpl8prs6kjmbwmgp09vbdgztuw8g6ykzzu&ep=v1_gifs_search&rid=giphy.gif&ct=g"
-};
-
-const isValidImageUrl = (url) => {
-  if (!url) return false;
-  
-  try {
-    new URL(url);
-  } catch {
-    return false;
-  }
-
-  const validExtensions = ['.gif', '.jpg', '.jpeg', '.png', '.webp'];
-  const hasValidExtension = validExtensions.some(ext => 
-    url.toLowerCase().endsWith(ext)
-  );
-
-  const trustedDomains = [
-    'giphy.com',
-    'media.giphy.com',
-    'imgur.com',
-    'i.imgur.com',
-    'cloudfront.net',
-    'githubusercontent.com'
-  ];
-  
-  const urlDomain = new URL(url).hostname;
-  const isTrustedDomain = trustedDomains.some(domain => 
-    urlDomain.includes(domain)
-  );
-
-  return hasValidExtension || isTrustedDomain;
-};
-
-const getBackgroundUrl = (game) => {
-  // Add null checks
-  if (!game) return sportGifDefaults.default;
-
-  try {
-    // Check for valid photoURL first
-    if (game.photoURL && isValidImageUrl(game.photoURL)) {
-      return game.photoURL;
-    }
-
-    // Check if sport exists and get default for that sport
-    if (game.sport && typeof game.sport === 'string') {
-      const sport = game.sport.toLowerCase();
-      return sportGifDefaults[sport] || sportGifDefaults.default;
-    }
-
-    // Return default if no valid sport
-    return sportGifDefaults.default;
-
-  } catch (error) {
-    console.error('Error getting background URL:', error);
-    return sportGifDefaults.default;
-  }
-};
-
-
+import { db } from '../../services/firebase';
+import { useAuth } from '../../context/AuthContext';
+import { doc, serverTimestamp , collection, setDoc} from 'firebase/firestore';
 
 
 const GameCard = ({ game, onDislike, onReserve }) => {
   const [isFlipped, setIsFlipped] = useState(false);
   const [isLiked, setIsLiked] = useState(false);
   const [isDisliked, setIsDisliked] = useState(false);
-  const [imageError, setImageError] = useState(false);
+  const [isReserving, setIsReserving] = useState(false);
+  const [reservationError, setReservationError] = useState(null);
+  const { user } = useAuth();
 
-  // Add null check for game prop
   if (!game) {
-    return null; // or some loading state/placeholder
+    return null;
   }
-   const cardStyle = {
-    backgroundImage: `url(${!imageError ? getBackgroundUrl(game) : sportGifDefaults.default})`,
+
+  const cardStyle = {
+    backgroundImage: `url(${game.photoURL})`,
     backgroundSize: 'cover',
     backgroundPosition: 'center'
   };
-   const handleImageError = () => {
-    setImageError(true);
-    console.log('Image failed to load, using default');
-  };
-
 
   const handleLike = (e) => {
     e.stopPropagation();
@@ -101,7 +34,6 @@ const GameCard = ({ game, onDislike, onReserve }) => {
     e.stopPropagation();
     setIsDisliked(!isDisliked);
     setIsLiked(false);
-    // Call the parent's onDislike to trigger next card
     onDislike(e);
   };
 
@@ -110,22 +42,65 @@ const GameCard = ({ game, onDislike, onReserve }) => {
     setIsFlipped(false);
   };
 
-  const handleReserveClick = (e) => {
-    e.stopPropagation();
-    // Call the parent's onReserve to trigger next card
-    onReserve(e);
-    handleFlipBack(e);
-  };
 
-  console.log(game.photoURL, getBackgroundUrl(game.photoURL));
-  
+
+  const handleReserveClick = async (e) => {
+      e.stopPropagation();
+      setIsReserving(true);
+      setReservationError(null);
+
+      try {
+        // Check if the game is full
+        if (game.currentPlayers >= game.maxPlayers) {
+          throw new Error('Game is full');
+        }
+
+        // Create a reference to the game_players subcollection
+        const gamePlayerRef = doc(
+          collection(db, 'games', game.id, 'game_players'),
+          user.uid
+        );
+
+        // Add the player to the game_players subcollection
+        await setDoc(gamePlayerRef, {
+          gameId: game.id,
+          userId: user.uid,
+          status: game.currentPlayers < game.maxPlayers ? 'confirmed' : 'waitlist',
+          joinedAt: serverTimestamp()
+        });
+
+        // // Create a record in user_games collection for easy querying
+        // const userGameRef = doc(db, 'user_games', `${user.uid}_${game.id}`);
+        // await setDoc(userGameRef, {
+        //   userId: user.uid,
+        //   gameId: game.id,
+        //   role: 'player',
+        //   status: game.currentPlayers < game.maxPlayers ? 'confirmed' : 'waitlist',
+        //   startTime: game.schedule.startTime
+        // });
+
+        // Notify parent component of successful reservation
+        onReserve(e);
+        handleFlipBack(e);
+
+      } catch (error) {
+        console.error('Error reserving spot:', error);
+        setReservationError(
+          error.message === 'Game is full' 
+            ? 'This game is full. You can join the waitlist.'
+            : 'Failed to reserve spot. Please try again.'
+        );
+      } finally {
+        setIsReserving(false);
+      }
+    };
+
 
   return (
     <div className={`game-card-container ${isFlipped ? 'is-flipped' : ''}`}>
       <div 
         className="game-card game-card-front" 
         style={cardStyle}
-        onError={handleImageError}
       >
         <div className="game-card__gradient-overlay" />
         
@@ -160,11 +135,7 @@ const GameCard = ({ game, onDislike, onReserve }) => {
             
             <div className="game-card__host">
               <div className="game-card__host-avatar">
-                {game.photoURL ? (
-                  <img src={game.photoURL} alt={game.hostName} />
-                ) : (
-                  <div>{game.hostName}</div>
-                )}
+                {game.hostName}
               </div>
               <div className="game-card__host-info">
                 <span>Hosted by {game.hostName}</span>
@@ -226,28 +197,40 @@ const GameCard = ({ game, onDislike, onReserve }) => {
           
           <div className="details-section">
             <h3>Equipment Needed</h3>
-            <p>{game.equipment || 'Basketball'}</p>
+            <p>{game.equipment || 'None specified'}</p>
           </div>
 
           <div className="details-section">
             <h3>Description</h3>
-            <p>{game.description || 'Come join us for a friendly game of 3v3 basketball!'}</p>
+            <p>{game.description || 'No description provided'}</p>
           </div>
 
           <div className="details-section">
             <h3>Additional Info</h3>
             <ul>
               <li>Duration: {game.startTime || 'Contact Host'}</li>
-              <li>Skill: {game.skillLevel || 'Beginner'}</li>
+              <li>Skill: {game.skillLevel || 'Not specified'}</li>
               <li>Fee: {game.fee ? `$${game.fee}` : 'Free'}</li>
             </ul>
           </div>
 
-           <button 
+          {reservationError && (
+            <div className="reservation-error">
+              {reservationError}
+            </div>
+          )}
+
+          <button 
             className="reserve-button"
-            onClick={handleReserveClick}  // Updated to use new handler
+            onClick={handleReserveClick}
+            disabled={isReserving}
           >
-            Reserve Your Spot
+            {isReserving 
+              ? 'Reserving...' 
+              : game.currentPlayers >= game.maxPlayers 
+                ? 'Join Waitlist'
+                : 'Reserve Your Spot'
+            }
           </button>
         </div>
       </div>

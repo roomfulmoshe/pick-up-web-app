@@ -1,204 +1,75 @@
-import { 
-  collection, 
-  addDoc, 
-  updateDoc, 
-  deleteDoc, 
-  doc, 
-  getDoc,
-  getDocs,
-  query,
-  where,
-  orderBy,
-  limit,
-  startAfter,
-  GeoPoint,
-  serverTimestamp 
-} from 'firebase/firestore';
 import { db } from './firebase';
+import { collection, getDocs } from 'firebase/firestore';
 
-const GAMES_COLLECTION = 'games';
-const GAME_PLAYERS_COLLECTION = 'game_players';
-const USER_GAMES_COLLECTION = 'user_games';
+// Calculate distance using Haversine formula (miles)
+const calculateDistance = (lat1, lon1, lat2, lon2) => {
+  const R = 3958.8; // Earth's radius in miles
+  const dLat = (lat2 - lat1) * (Math.PI / 180);
+  const dLon = (lon2 - lon1) * (Math.PI / 180);
+  const a = 
+    Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+    Math.cos(lat1 * (Math.PI / 180)) * Math.cos(lat2 * (Math.PI / 180)) *
+    Math.sin(dLon / 2) * Math.sin(dLon / 2);
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+  return R * c;
+};
 
-export const gameService = {
-  // Create a new game
-  async createGame(gameData) {
-    try {
-      // Add timestamps
-      const gameWithTimestamps = {
-        ...gameData,
-        createdAt: serverTimestamp(),
-        updatedAt: serverTimestamp(),
-        status: 'active',
-        currentPlayers: 1 // Host is first player
-      };
+// Filter games by sports
+const filterGamesBySports = (games, sportsArray) => {
+  if (!sportsArray || sportsArray.length === 0) return games;
+  return games.filter(game => sportsArray.includes(game.sport.toLowerCase()));
+};
 
-      // Convert location to GeoPoint if coordinates are provided
-      if (gameData.location?.latitude && gameData.location?.longitude) {
-        gameWithTimestamps.location.coordinates = new GeoPoint(
-          gameData.location.latitude,
-          gameData.location.longitude
-        );
-      }
+// Filter games by distance
+const filterGamesByDistance = (games, userLat, userLon, maxDistanceMiles) => {
+  if (!userLat || !userLon || !maxDistanceMiles) return games;
+  
+  return games.filter(game => {
+    const gameLat = game.location.latitude;
+    const gameLon = game.location.longitude;
+    const distance = calculateDistance(userLat, userLon, gameLat, gameLon);
+    return distance <= maxDistanceMiles;
+  });
+};
 
-      // Create game document
-      const gameRef = await addDoc(collection(db, GAMES_COLLECTION), gameWithTimestamps);
-      
-      // Add host to game_players subcollection
-      await addDoc(collection(db, GAMES_COLLECTION, gameRef.id, GAME_PLAYERS_COLLECTION), {
-        userId: gameData.hostId,
-        status: 'confirmed',
-        role: 'host',
-        joinedAt: serverTimestamp()
-      });
+// Filter games by skill level
+const filterGamesBySkillLevel = (games, skillLevel) => {
+  if (!skillLevel) return games;
+  return games.filter(game => game.skillLevel === skillLevel);
+};
 
-      // Add to user_games collection for quick queries
-      await addDoc(collection(db, USER_GAMES_COLLECTION), {
-        userId: gameData.hostId,
-        gameId: gameRef.id,
-        role: 'host',
-        status: 'confirmed',
-        startTime: gameData.schedule.startTime
-      });
+// Main filter function that combines all filters
+export const filterGames = (games, filters) => {
+  let filteredGames = [...games];
 
-      return gameRef.id;
-    } catch (error) {
-      console.error('Error creating game:', error);
-      throw error;
-    }
-  },
-
-  // Get game by ID
-  async getGame(gameId) {
-    try {
-      const gameDoc = await getDoc(doc(db, GAMES_COLLECTION, gameId));
-      if (!gameDoc.exists()) {
-        throw new Error('Game not found');
-      }
-      return { id: gameDoc.id, ...gameDoc.data() };
-    } catch (error) {
-      console.error('Error getting game:', error);
-      throw error;
-    }
-  },
-
-  // Get games for swiping (with filters)
-  async getGamesForSwiping(filters, lastGame = null) {
-    try {
-      let q = collection(db, GAMES_COLLECTION);
-      
-      // Base query conditions
-      const conditions = [
-        where('status', '==', 'active'),
-        where('schedule.startTime', '>', new Date()),
-        orderBy('schedule.startTime', 'asc')
-      ];
-
-      // Add filters
-      if (filters.sport) {
-        conditions.push(where('sport', '==', filters.sport));
-      }
-      if (filters.skillLevel) {
-        conditions.push(where('skillLevel', '==', filters.skillLevel));
-      }
-      if (filters.hostRating) {
-        conditions.push(where('hostRating', '>=', filters.hostRating));
-      }
-
-      // Build query with conditions
-      q = query(q, ...conditions);
-
-      // Add pagination
-      if (lastGame) {
-        q = query(q, startAfter(lastGame), limit(10));
-      } else {
-        q = query(q, limit(10));
-      }
-
-      const snapshot = await getDocs(q);
-      return snapshot.docs.map(doc => ({
-        id: doc.id,
-        ...doc.data()
-      }));
-    } catch (error) {
-      console.error('Error getting games for swiping:', error);
-      throw error;
-    }
-  },
-
-  // Join a game
-  async joinGame(gameId, userId, autoJoin = false) {
-    try {
-      const gameRef = doc(db, GAMES_COLLECTION, gameId);
-      const gameDoc = await getDoc(gameRef);
-      const gameData = gameDoc.data();
-
-      // Check if game is full
-      if (gameData.currentPlayers >= gameData.maxPlayers) {
-        throw new Error('Game is full');
-      }
-
-      // Add player to game_players subcollection
-      await addDoc(collection(db, GAMES_COLLECTION, gameId, GAME_PLAYERS_COLLECTION), {
-        userId,
-        status: autoJoin ? 'confirmed' : 'pending',
-        role: 'player',
-        joinedAt: serverTimestamp()
-      });
-
-      // Add to user_games collection
-      await addDoc(collection(db, USER_GAMES_COLLECTION), {
-        userId,
-        gameId,
-        role: 'player',
-        status: autoJoin ? 'confirmed' : 'pending',
-        startTime: gameData.schedule.startTime
-      });
-
-      // Update current players count if auto-join
-      if (autoJoin) {
-        await updateDoc(gameRef, {
-          currentPlayers: gameData.currentPlayers + 1,
-          updatedAt: serverTimestamp()
-        });
-      }
-
-      return true;
-    } catch (error) {
-      console.error('Error joining game:', error);
-      throw error;
-    }
-  },
-
-  // Get user's games
-  async getUserGames(userId) {
-    try {
-      const q = query(
-        collection(db, USER_GAMES_COLLECTION),
-        where('userId', '==', userId),
-        where('startTime', '>', new Date()),
-        orderBy('startTime', 'asc')
-      );
-
-      const snapshot = await getDocs(q);
-      const userGames = snapshot.docs.map(doc => ({
-        id: doc.id,
-        ...doc.data()
-      }));
-
-      // Get full game details for each game
-      const gamePromises = userGames.map(async (userGame) => {
-        const gameDoc = await getDoc(doc(db, GAMES_COLLECTION, userGame.gameId));
-        return {
-          ...userGame,
-          gameDetails: { id: gameDoc.id, ...gameDoc.data() }
-        };
-      });
-
-      return Promise.all(gamePromises);
-    } catch (error) {
-      console.error('Error getting user games:', error);
-      throw error;
-    }
+  // Apply sports filter
+  if (filters.sports?.length > 0) {
+    filteredGames = filterGamesBySports(filteredGames, filters.sports);
   }
+
+  // Apply distance filter
+  if (filters.location && filters.maxDistance) {
+    filteredGames = filterGamesByDistance(
+      filteredGames,
+      filters.location.latitude,
+      filters.location.longitude,
+      filters.maxDistance
+    );
+  }
+
+  // Apply skill level filter
+  if (filters.skillLevel) {
+    filteredGames = filterGamesBySkillLevel(filteredGames, filters.skillLevel);
+  }
+
+  return filteredGames;
+};
+
+// Additional helper functions as needed
+export const getUniqueGameSports = (games) => {
+  return [...new Set(games.map(game => game.sport))];
+};
+
+export const getSkillLevels = () => {
+  return ['beginner', 'intermediate', 'advanced'];
 };
