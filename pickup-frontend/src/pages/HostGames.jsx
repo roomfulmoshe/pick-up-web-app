@@ -14,6 +14,7 @@ import { getGeocode } from '../services/geocoding';
 import '../styles/host.css';
 import Navbar from '../components/layout/Navbar';
 import Footer from '../components/layout/Footer';
+import AddressAutocomplete from '../components/layout/AddressAutocomplete';
 
 
 
@@ -296,7 +297,7 @@ const handleSubmit = async (e) => {
               </div>
             </div>
 
-            <div className="input-group">
+            {/* <div className="input-group">
               <label>Address</label>
               <input
                 type="text"
@@ -307,6 +308,24 @@ const handleSubmit = async (e) => {
                   location: {...formData.location, address: e.target.value}
                 })}
                 className={errors.address ? 'error' : ''}
+              />
+              {errors.address && <span className="error">{errors.address}</span>}
+            </div> */}
+
+            <div className="input-group">
+              <label>Address</label>
+              <AddressAutocomplete
+                value={formData.location.address}
+                onChange={(addressData) => setFormData({
+                  ...formData,
+                  location: {
+                    ...formData.location,
+                    address: addressData.address,
+                    latitude: addressData.latitude,
+                    longitude: addressData.longitude,
+                  }
+                })}
+                error={errors.address}
               />
               {errors.address && <span className="error">{errors.address}</span>}
             </div>

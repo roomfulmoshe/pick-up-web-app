@@ -6,6 +6,7 @@ import ProfileForm from './components/auth/ProfileForm';
 import LoginPage from './components/auth/LoginPage';
 import HomePage from './components/HomePage';
 import HostGames from './pages/HostGames';
+import MyGames from './pages/MyGames';
 
 function App() {
   return (
@@ -33,9 +34,18 @@ function App() {
           } 
         />
         <Route 
+          path="/mygames" 
+          element={
+            <ProtectedRoute>
+              <MyGames/>
+            </ProtectedRoute>
+          } 
+        />
+        <Route 
           path="/" 
           element={
             <ProtectedRoute>
+              {/* Add find page here */}
               <HomePage />
             </ProtectedRoute>
           } 

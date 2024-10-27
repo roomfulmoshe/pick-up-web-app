@@ -3,9 +3,9 @@ import { useAuth } from '../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import Navbar from './layout/Navbar';
 import Footer from './layout/Footer';
-import GameCard from './games/GameCard';
 import '../styles/homePage.css';
 import GameSwiper from './games/GameSwiper';
+import GameFilters from './games/GameFilters';
 
 
 const HomePage = () => {
@@ -54,7 +54,7 @@ const gamesData = [
     currentPlayers: 4,
     maxPlayers: 6,
     minPlayers: 6,
-    photoURL: "https://media.giphy.com/media/3o6ZtmDAQdrDfaTWEw/giphy.gif",
+    photoURL: "",
     skillLevel: "intermediate",
     hostName: "Loan Smith",
     hostRating: 4.8,
@@ -244,29 +244,21 @@ const gamesData = [
 
 
 
-  return (
+return (
     <div className="page-container">
       <Navbar />
       <main className="main-content">
-
-
         <div className="container">
-          {/* <h1 className="welcome-heading">
-            Welcome, {user?.displayName || 'User'}!
-          </h1> */}
           <div className="games-grid">
-            <GameSwiper gamesData={gamesData}/>
+            <GameFilters />
+            <div className="game-swiper-wrapper">
+              <GameSwiper gamesData={gamesData} />
+            </div>
           </div>
         </div>
-
-        
-
-
-
       </main>
       <Footer />
     </div>
   );
-};
-
+}
 export default HomePage;
