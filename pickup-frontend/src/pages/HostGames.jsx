@@ -254,7 +254,7 @@ const handleSubmit = async (e) => {
             <div className="input-group">
               <label>Description</label>
               <textarea
-                placeholder="Add any special rules, requirements, or notes"
+                placeholder="Add any special rules, requirements, contact number, or notes"
                 value={formData.description}
                 onChange={e => setFormData({...formData, description: e.target.value})}
                 rows={4}
@@ -389,7 +389,7 @@ const handleSubmit = async (e) => {
 
             <div className="players-group">
               <div className="input-group">
-                <label>Min Players</label>
+                <label>Min Players (includes you)</label>
                 <input
                   type="number"
                   value={formData.minPlayers}
@@ -399,7 +399,7 @@ const handleSubmit = async (e) => {
               </div>
 
               <div className="input-group">
-                <label>Max Players</label>
+                <label>Max Players (includes you)</label>
                 <input
                   type="number"
                   value={formData.maxPlayers}

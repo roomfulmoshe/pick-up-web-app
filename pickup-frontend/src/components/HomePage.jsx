@@ -57,6 +57,7 @@ const HomePage = () => {
           collection(db, 'games'),
           where('status', '==', 'active'),
           where('hostId', '!=', user.uid),
+          where('schedule.startTime', '>', Timestamp.now()),
           orderBy('schedule.startTime', 'asc')
         );
 
@@ -91,7 +92,7 @@ const HomePage = () => {
             fee: data.fee || 0
           };
         });
-
+        console.log(games)
         setAllGames(games);
         setFilteredGames(games); // Initially show all games
       } catch (err) {
