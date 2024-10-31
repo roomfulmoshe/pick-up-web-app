@@ -9,6 +9,8 @@ import '../styles/homePage.css';
 import GameSwiper from './games/GameSwiper';
 import GameFilters from './games/GameFilters';
 import { filterGames, getUniqueGameSports, getSkillLevels } from '../services/gameServices';
+
+
 const HomePage = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
@@ -54,6 +56,7 @@ const HomePage = () => {
         const gamesQuery = query(
           collection(db, 'games'),
           where('status', '==', 'active'),
+          where('hostId', '!=', user.uid),
           orderBy('schedule.startTime', 'asc')
         );
 
